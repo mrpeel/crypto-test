@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Crypto test">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title id="bar-title">Crypto test</title>
+
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
+
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Weekly Usage Stats">
+    <link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png">
+
+    <!-- Tile icon for Win8 (144x144 + tile color) -->
+    <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
+    <meta name="msapplication-TileColor" content="#3372DF">
+
+
+</head>
+
+<body>
+
+    <div id="activity-log">
+        <h1>Crypto Test</h1>
+        <p>Check console</p>
+    </div>
+
+
+    <script src="pbkdf2.js"></script>
+    <script src="hmac-sha256.js"></script>
+
+    <script>
+        var ns = "cake.man.io";
+        var passphrase = "My Test Password";
+        var domain = "mrpeel@gmail.com";
+        var derviedKey, seed, seedArray;
+
+
+        console.log("Pass phrase: " + passphrase);
+        console.log("Salt: " + ns);
+        console.log("Domain: " + domain);
+
+
+        //ns = CryptoJS.enc.Hex.parse("63616b652e6d616e2e696f");
+        //use name space as salt
+        derivedKey = CryptoJS.PBKDF2(passphrase, ns, {
+            iterations: 500,
+            keySize: 256 / 32
+        });
+        console.log('Derived key: ' + derivedKey);
+        //hexKey = CryptoJS.enc.Hex.stringify(derivedKey);
+        //console.log('Hex key: ' + derivedKey);
+
+        seed = CryptoJS.HmacSHA256(domain, derivedKey);
+        console.log('HMAC result seed hex: ' + seed);
+
+        seedArray = convertWordArrayToUint8Array(seed);
+        console.log('HMAC result seed array: ' + seedArray);
+
+        function convertWordArrayToUint8Array(wordArray) {
+            var len = wordArray.words.length,
+                u8_array = new Uint8Array(len << 2),
+                offset = 0,
+                word, i;
+            for (i = 0; i < len; i++) {
+                word = wordArray.words[i];
+                u8_array[offset++] = word >> 24;
+                u8_array[offset++] = (word >> 16) & 0xff;
+                u8_array[offset++] = (word >> 8) & 0xff;
+                u8_array[offset++] = word & 0xff;
+            }
+            return u8_array;
+        }
+
+    </script>
+</body>
+
+</html>
