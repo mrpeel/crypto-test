@@ -35,49 +35,9 @@
 
     <script src="pbkdf2.js"></script>
     <script src="hmac-sha256.js"></script>
-
+    <script src="manager.js"></script>
     <script>
-        var ns = "cake.man.io";
-        var passphrase = "My Test Password";
-        var domain = "mrpeel@gmail.com";
-        var derviedKey, seed, seedArray;
-
-
-        console.log("Pass phrase: " + passphrase);
-        console.log("Salt: " + ns);
-        console.log("Domain: " + domain);
-
-
-        //ns = CryptoJS.enc.Hex.parse("63616b652e6d616e2e696f");
-        //use name space as salt
-        derivedKey = CryptoJS.PBKDF2(passphrase, ns, {
-            iterations: 500,
-            keySize: 256 / 32
-        });
-        console.log('Derived key: ' + derivedKey);
-        //hexKey = CryptoJS.enc.Hex.stringify(derivedKey);
-        //console.log('Hex key: ' + derivedKey);
-
-        seed = CryptoJS.HmacSHA256(domain, derivedKey);
-        console.log('HMAC result seed hex: ' + seed);
-
-        seedArray = convertWordArrayToUint8Array(seed);
-        console.log('HMAC result seed array: ' + seedArray);
-
-        function convertWordArrayToUint8Array(wordArray) {
-            var len = wordArray.words.length,
-                u8_array = new Uint8Array(len << 2),
-                offset = 0,
-                word, i;
-            for (i = 0; i < len; i++) {
-                word = wordArray.words[i];
-                u8_array[offset++] = word >> 24;
-                u8_array[offset++] = (word >> 16) & 0xff;
-                u8_array[offset++] = (word >> 8) & 0xff;
-                u8_array[offset++] = word & 0xff;
-            }
-            return u8_array;
-        }
+    runCrypto();
 
     </script>
 </body>
