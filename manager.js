@@ -1,11 +1,12 @@
-/*global  console, CryptoJS, Uint8Array, Promise */
+/*global  console, CryptoJS, Uint8Array, Promise, performance */
 
 function runCrypto() {
     var ns = "cake.man.io";
     var passphrase = "My Test Password";
     var domain = "mrpeel@gmail.com";
     var seed, seedArray;
-
+    var t0 = performance.now();
+    
 
     console.log("Pass phrase: " + passphrase);
     console.log("Salt: " + ns);
@@ -29,6 +30,7 @@ function runCrypto() {
 
         console.log('HMAC result seed array: ' + seedArray);
         console.log("All done"); 
+        console.log(performance.now() - t0 + " ms");
     });
     
 }
