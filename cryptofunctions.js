@@ -8,7 +8,7 @@ var CryptoFunctions = function () {
     "use strict";
 
 
-    if (window.crypto.subtle) {
+    if (window.crypto && window.crypto.subtle) {
         this.useSubtle = true;
         this.cryptoTextEncoder = new TextEncoder("utf-8");
         this.cryptoTextDecoder = new TextDecoder("utf-8");
