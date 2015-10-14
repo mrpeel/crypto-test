@@ -210,6 +210,61 @@ function encryptDecryptSubtleCrypto() {
 
 }
 
+function PBKDF2Crypto() {
+    var cryptoFunctions = new CryptoFunctions();
+
+    console.log("PBKDF2");
+    console.log("Using subtle cypto: " + cryptoFunctions.useSubtle);
+    console.log("Pass phrase: " + passphrase);
+    console.log("Salt: " + ns);
+    console.log("Domain: " + domain);
+
+
+
+    cryptoFunctions.PBKDF2(passphrase, ns, 750, 128)
+        .then(function (key) {
+            console.log('Derived key hex: ' + cryptoFunctions.convertDerivedKeyToHex(key));
+
+            return cryptoFunctions.HMACSHA256(domain, key);
+        }).then(function (seed) {
+            seedHex4 = cryptoFunctions.convertUint8ArrayToHex(seed);
+            console.log('HMAC result seed hex: ' + seedHex4);
+
+            console.log('HMAC result seed array: ' + seed);
+        });
+
+}
+
+function encryptDecryptCrypto() {
+    var cryptoFunctions = new CryptoFunctions();
+
+    var keyHolder;
+
+    console.log("AES Encrypt and Decrypt");
+    console.log("Using subtle cypto: " + cryptoFunctions.useSubtle);
+    console.log("Pass phrase: " + passphrase);
+    console.log("Salt: " + ns);
+    console.log("Plain text: " + plainText);
+
+
+
+    cryptoFunctions.PBKDF2(passphrase, ns, 750, 128)
+        .then(function (key) {
+            console.log('Key hex: ' + cryptoFunctions.convertDerivedKeyToHex(key));
+            keyHolder = cryptoFunctions.convertDerivedKeyToHex(key);
+
+            return cryptoFunctions.AESEncrypt(plainText, keyHolder);
+        }).then(function (encryptedData) {
+            console.log(cryptoFunctions.convertDerivedKeyToHex(encryptedData.ciphertext));
+
+            return cryptoFunctions.AESDecrypt(encryptedData, keyHolder);
+        }).then(function (plainText) {
+            console.log('Decrypted plain text: ' + plainText);
+
+        });
+
+}
+
 
 function PBKDF2(passphrase, salt) {
     return new Promise(function (resolve, reject) {

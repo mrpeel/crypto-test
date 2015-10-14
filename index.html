@@ -33,7 +33,14 @@
     <script src="manager.js"></script>
     <script src="cryptofunctions.js"></script>
     <script>
-        runCrypto();
+        PBKDF2Crypto();
+
+
+        window.setTimeout(function() {
+            encryptDecryptCrypto();
+        }, 1000);
+
+        /*runCrypto();
 
 
         window.setTimeout(function() {
@@ -54,7 +61,7 @@
 
         window.setTimeout(function() {
             encryptDecryptSubtleCrypto();
-        }, 5000);
+        }, 5000);*/
 
     </script>
 </body>
