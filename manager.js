@@ -3,8 +3,10 @@
 var ns = "cake.man.io";
 var passphrase = "My Special Pass phrase";
 var domain = "mrpeel@mydomain.com.au";
+var name = "Neil Kloot";
 var plainText = "I hëart årt and £$¢!"; //"My secret message";
 var seedHex1, seedHex2, seedHex3, seedHex4;
+var encData, threeCharHash;
 
 function runCrypto() {
     var seed, seedArray;
@@ -253,6 +255,7 @@ function encryptDecryptCrypto() {
             console.log('Key hex: ' + cryptoFunctions.convertDerivedKeyToHex(key));
             keyHolder = cryptoFunctions.convertDerivedKeyToHex(key);
 
+
             return cryptoFunctions.AESEncrypt(plainText, keyHolder);
         }).then(function (encryptedData) {
             console.log(cryptoFunctions.convertDerivedKeyToHex(encryptedData.ciphertext));
@@ -260,6 +263,117 @@ function encryptDecryptCrypto() {
             return cryptoFunctions.AESDecrypt(encryptedData, keyHolder);
         }).then(function (plainText) {
             console.log('Decrypted plain text: ' + plainText);
+
+        });
+
+}
+
+
+function encryptPassword() {
+    var cryptoFunctions = new CryptoFunctions();
+
+    console.log("Encrypt pass phrase");
+    console.log("Using subtle cypto: " + cryptoFunctions.useSubtle);
+    console.log("Pass phrase: " + passphrase);
+    console.log("Salt: " + name + ns);
+    console.log("Name: " + name);
+
+    var aesKey;
+    var firstThreeChars = passphrase.substring(0, 3);
+    console.log("First three chars: " + firstThreeChars);
+
+
+    cryptoFunctions.PBKDF2(name + firstThreeChars, name + ns, 500, 128)
+        .then(function (key) {
+            aesKey = cryptoFunctions.convertDerivedKeyToHex(key);
+            console.log('Derived key hex: ' + aesKey);
+
+            return cryptoFunctions.PBKDF2(cryptoFunctions.convertDerivedKeyToHex(key), name + firstThreeChars, 250, 128);
+        }).then(function (verificationHash) {
+            threeCharHash = cryptoFunctions.convertDerivedKeyToHex(verificationHash);
+            console.log('Three char hash: ' + threeCharHash);
+
+            return cryptoFunctions.AESEncrypt(passphrase, aesKey);
+        }).then(function (encryptedData) {
+            encData = encryptedData;
+
+            console.log("Encrypted data: " + cryptoFunctions.convertDerivedKeyToHex(encryptedData.ciphertext));
+            console.log("Encryption complete");
+        });
+
+}
+
+function decryptPassword() {
+    var cryptoFunctions = new CryptoFunctions();
+
+    console.log("Decrypt pass phrase with wrong 3 chars");
+    console.log("Using subtle cypto: " + cryptoFunctions.useSubtle);
+    console.log("Pass phrase: " + passphrase);
+    console.log("Salt: " + name + ns);
+    console.log("Name: " + name);
+
+    var aesKey;
+    var firstThreeChars = passphrase.substring(0, 3);
+    console.log("First three chars: " + firstThreeChars);
+
+
+    cryptoFunctions.PBKDF2(name + firstThreeChars, name + ns, 500, 128)
+        .then(function (key) {
+            aesKey = cryptoFunctions.convertDerivedKeyToHex(key);
+            console.log('Derived key hex: ' + aesKey);
+
+            return cryptoFunctions.PBKDF2(cryptoFunctions.convertDerivedKeyToHex(key), name + firstThreeChars, 250, 128);
+        }).then(function (verificationHash) {
+            if (threeCharHash === cryptoFunctions.convertDerivedKeyToHex(verificationHash)) {
+                console.log('Expected three char hash: ' + threeCharHash + ', Actual three char hash: ' + cryptoFunctions.convertDerivedKeyToHex(verificationHash));
+
+                cryptoFunctions.AESDecrypt(encData, aesKey)
+                    .then(function (plainText) {
+                        console.log('Decrypted plain text: ' + plainText);
+                        console.log("Decryption complete");
+                    });
+
+            } else {
+                console.log('Expected three char hash: ' + threeCharHash + ', Actual three char hash: ' + cryptoFunctions.convertDerivedKeyToHex(verificationHash));
+                console.log("Decryption suspended");
+            }
+
+        });
+
+}
+
+function failDecryptPassword() {
+    var cryptoFunctions = new CryptoFunctions();
+
+    console.log("Decrypt pass phrase with wrong 3 chars");
+    console.log("Using subtle cypto: " + cryptoFunctions.useSubtle);
+    console.log("Pass phrase: " + passphrase.substring(1));
+    console.log("Salt: " + name + ns);
+    console.log("Name: " + name);
+
+    var aesKey;
+    var firstThreeChars = passphrase.substring(1, 3);
+    console.log("First three chars: " + firstThreeChars);
+
+
+    cryptoFunctions.PBKDF2(name + firstThreeChars, name + ns, 500, 128)
+        .then(function (key) {
+            aesKey = cryptoFunctions.convertDerivedKeyToHex(key);
+            console.log('Derived key hex: ' + aesKey);
+
+            return cryptoFunctions.PBKDF2(cryptoFunctions.convertDerivedKeyToHex(key), name + firstThreeChars, 250, 128);
+        }).then(function (verificationHash) {
+            if (threeCharHash === cryptoFunctions.convertDerivedKeyToHex(verificationHash)) {
+                return cryptoFunctions.AESDecrypt(encData, aesKey)
+                    .then(function (plainText) {
+                        console.log('Decrypted plain text: ' + plainText);
+                        console.log("Decryption complete");
+                    });
+
+            } else {
+                console.log('Expected three char hash: ' + threeCharHash + ', Actual three char hash: ' + cryptoFunctions.convertDerivedKeyToHex(verificationHash));
+                console.log("Decryption suspended");
+            }
 
         });
 
