@@ -8,20 +8,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title id="bar-title">Crypto test</title>
 
-    <!-- Add to homescreen for Chrome on Android -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
-
-    <!-- Add to homescreen for Safari on iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Weekly Usage Stats">
-    <link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png">
-
-    <!-- Tile icon for Win8 (144x144 + tile color) -->
-    <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
-    <meta name="msapplication-TileColor" content="#3372DF">
-
 
 </head>
 
@@ -36,13 +22,39 @@
         // If Promise is not supported, include the polyfill
         // https://github.com/taylorhakes/promise-polyfill
         window.Promise || document.write("<script src=Promise.min.js><\/script>");
-</script>
 
-    <script src="pbkdf2.js"></script>
-    <script src="hmac-sha256.js"></script>
+        /*if (!window.crypto.subtle) {
+            document.write("<script src=cryptojs.js><\/script>");
+        }*/
+
+    </script>
+
+    <script src="cryptojs.js"></script>
     <script src="manager.js"></script>
+    <script src="cryptofunctions.js"></script>
     <script>
         runCrypto();
+
+
+        window.setTimeout(function() {
+            useSubtleCrypto();
+        }, 1000);
+
+        window.setTimeout(function() {
+            useClassCryptoJS();
+        }, 2000);
+
+        window.setTimeout(function() {
+            useClassSubtleCrypto();
+        }, 3000);
+
+        window.setTimeout(function() {
+            encryptDecryptCryptoJS();
+        }, 4000);
+
+        window.setTimeout(function() {
+            encryptDecryptSubtleCrypto();
+        }, 5000);
 
     </script>
 </body>
