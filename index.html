@@ -16,6 +16,18 @@
     <div id="activity-log">
         <h1>Crypto Test</h1>
         <p>Check console</p>
+
+        <input id="inputPhrase" type="text" style="width:600px; height: 25px;" />
+        <p></p>
+        <button id="enc">Encrypt Phrase</button>
+        <p></p>
+        <input id="inputThreeChars" type="text" style="width:600px; height: 25px;" />
+        <p></p>
+        <button id="dec">Decrypt Phrase</button>
+        <p></p>
+        <div>
+            <input id="output" type="textarea" style="width:600px; height: 50px;" />
+        </div>
     </div>
 
     <script>
@@ -30,10 +42,35 @@
     </script>
 
     <script src="cryptojs.js"></script>
-    <script src="manager.js"></script>
     <script src="cryptofunctions.js"></script>
+    <script src="temporaryphrasestore.js"></script>
     <script>
-        PBKDF2Crypto();
+        document.querySelector("[id=enc]").addEventListener("click", encPassPhrase, false);
+        document.querySelector("[id=dec]").addEventListener("click", decPassPhrase, false);
+
+        var temporaryPhraseStore = new TemporaryPhraseStore();
+
+        function encPassPhrase() {
+            temporaryPhraseStore.encryptPhrase(document.querySelector("[id=inputPhrase]").value, "Neil Kloot").then(function(val) {
+                console.table(temporaryPhraseStore.encData);
+                document.querySelector("[id=output]").value = temporaryPhraseStore.encData.ciphertext;
+            });
+        }
+
+        function decPassPhrase() {
+            temporaryPhraseStore.decryptPhrase(document.querySelector("[id=inputThreeChars]").value, "Neil Kloot").then(function(plainText) {
+                console.log("Successful Decryption");
+                document.querySelector("[id=output]").value = plainText;
+            }).catch(function(err) {
+                console.log("Failed Decryption");
+                console.table(temporaryPhraseStore.encData);
+                document.querySelector("[id=output]").value = err;
+
+            });
+        }
+
+
+        /*PBKDF2Crypto();
 
 
         window.setTimeout(function() {
@@ -50,7 +87,7 @@
 
         window.setTimeout(function() {
             failDecryptPassword();
-        }, 4000);
+        }, 4000);*/
 
 
 

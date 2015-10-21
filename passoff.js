@@ -183,6 +183,7 @@ PassOff.prototype.convertWordArrayToUint8Array = function (wordArray) {
     return u8_array;
 };
 
+
 /**
  * Resets all the values used for calculations
  * @param {None}.
@@ -192,7 +193,7 @@ PassOff.prototype.convertWordArrayToUint8Array = function (wordArray) {
 PassOff.prototype.clearPassPhrase = function (wordArray) {
     "use strict";
 
-    this.passPhrase = "00000000000000000000000000000000000000000000000000000000000000000000000000000";
+    this.passPhrase = zeroVar(this.passPhrase);
     this.passPhrase = "";
 };
 /**
@@ -350,3 +351,11 @@ PassOff.prototype.generatePassword = function (passwordType) {
     }
 
 };
+
+/** Utility function to replace a string's value with all zeroes
+ */
+
+function zeroVar(varToZero) {
+    return Array(varToZero.length).join("0");
+
+}

@@ -1,25 +1,5 @@
 /*global CryptoJS, Promise, console, Uint8Array, window, TextEncoder, TextDecoder */
 
-/** 
- * Passoff class encapsulating the functionality for executing PBKDF2, HMAC-256 and AES encryption and decryption.
- * Uses subtle.crypto if availabel and falls back to using the CyrptoJS library
- */
-var CryptoFunctions = function () {
-    "use strict";
-
-
-    if (window.crypto && window.crypto.subtle) {
-        this.useSubtle = true;
-        this.cryptoTextEncoder = new TextEncoder("utf-8");
-        this.cryptoTextDecoder = new TextDecoder("utf-8");
-    } else {
-        this.useSubtle = false;
-    }
-
-
-
-};
-
 /**
  * Executes the PBKDF2 function.  If crypto subtle is supported it is used.  If not,  the CryptoJS PBKDF2 function is wrapped
  * in a promise.   Either way, it returns the derived key
@@ -27,14 +7,15 @@ var CryptoFunctions = function () {
  *     perform, and the length for the derived key
  * @return {Promise} A promise which resolves to the derived key.
  */
-CryptoFunctions.prototype.PBKDF2 = function (password, salt, numIterations, keyLength) {
+function PBKDF2(password, salt, numIterations, keyLength) {
     "use strict";
 
-    if (this.useSubtle) {
+    if (window.crypto && window.crypto.subtle) {
         //use the subtle crypto functions
+        var cryptoTextEncoder = new TextEncoder("utf-8");
 
-        var saltBuffer = this.cryptoTextEncoder.encode(salt);
-        var passwordBuffer = this.cryptoTextEncoder.encode(password);
+        var saltBuffer = cryptoTextEncoder.encode(salt);
+        var passwordBuffer = cryptoTextEncoder.encode(password);
 
         return window.crypto.subtle.importKey('raw', passwordBuffer, {
             name: 'PBKDF2'
@@ -60,7 +41,7 @@ CryptoFunctions.prototype.PBKDF2 = function (password, salt, numIterations, keyL
         });
     }
 
-};
+}
 
 /**
  * Executes the HMAC-SHA256 function.  If crypto subtle is supported it is used.  If not,  the CryptoJS HmacSHA256 function is wrapped
@@ -69,16 +50,15 @@ CryptoFunctions.prototype.PBKDF2 = function (password, salt, numIterations, keyL
  * @return {Promise} A promise which resolves a Uint8Array with the MAC.
  */
 
-CryptoFunctions.prototype.HMACSHA256 = function (plainText, key) {
+function HMACSHA256(plainText, key) {
     "use strict";
 
-    var cryptoContext = this;
-
-    if (this.useSubtle) {
+    if (window.crypto && window.crypto.subtle) {
         //use the subtle crypto functions
         return new Promise(function (resolve, reject) {
 
-            var plainTextBuffer = cryptoContext.cryptoTextEncoder.encode(plainText);
+            var cryptoTextEncoder = new TextEncoder("utf-8");
+            var plainTextBuffer = cryptoTextEncoder.encode(plainText);
 
             window.crypto.subtle.importKey("raw", key, {
                     name: "HMAC",
@@ -106,12 +86,12 @@ CryptoFunctions.prototype.HMACSHA256 = function (plainText, key) {
         //use the CryptJS function
         return new Promise(function (resolve, reject) {
             var mac = CryptoJS.HmacSHA256(plainText, key);
-            var macArray = cryptoContext.convertWordArrayToUint8Array(mac);
+            var macArray = convertWordArrayToUint8Array(mac);
             //Convert to uInt8Array
             resolve(macArray);
         });
     }
-};
+}
 
 /**
  * Executes an AES encryption.  If crypto subtle is supported it is used.  If not,  the CryptoJS AES encryption function is wrapped in a promise.
@@ -119,17 +99,17 @@ CryptoFunctions.prototype.HMACSHA256 = function (plainText, key) {
  * @param {plainText, key} The plaintext data to be encrypted and the encryption key as a hex string.
  * @return {Promise} A promise which resolves to the encryted data.
  */
-CryptoFunctions.prototype.AESEncrypt = function (plainText, key) {
+function aesEncrypt(plainText, key) {
     "use strict";
 
-    var cryptoContext = this;
-    if (this.useSubtle) {
+    if (window.crypto && window.crypto.subtle) {
         //use the subtle crypto functions
         return new Promise(function (resolve, reject) {
-            var plainTextBuffer = cryptoContext.cryptoTextEncoder.encode(plainText);
+            var cryptoTextEncoder = new TextEncoder("utf-8");
+            var plainTextBuffer = cryptoTextEncoder.encode(plainText);
 
             //Key will be supplied in hex - so need to convert to Uint8Array
-            var aesKey = cryptoContext.convertHexToUint8Array(key);
+            var aesKey = convertHexToUint8Array(key);
 
             //Create random initialisation vector
             var iv = window.crypto.getRandomValues(new Uint8Array(16));
@@ -163,7 +143,7 @@ CryptoFunctions.prototype.AESEncrypt = function (plainText, key) {
         });
     }
 
-};
+}
 
 /**
  * Executes an AES decryption.  If crypto subtle is supported it is used.  If not,  the CryptoJS AES decryption function is wrapped in a promise.
@@ -171,16 +151,17 @@ CryptoFunctions.prototype.AESEncrypt = function (plainText, key) {
  * @param {cipherText, key} The ciphertext data to be decrypted and the decryption key as a hex string.
  * @return {Promise} A promise which resolves to the plain text data.
  */
-CryptoFunctions.prototype.AESDecrypt = function (encyptedData, key) {
+function aesDecrypt(encyptedData, key) {
     "use strict";
 
-    var cryptoContext = this;
 
-    if (this.useSubtle) {
+    if (window.crypto && window.crypto.subtle) {
         //use the subtle crypto functions
         return new Promise(function (resolve, reject) {
             //Key will be supplied in hex - so need to convert to Uint8Array
-            var aesKey = cryptoContext.convertHexToUint8Array(key);
+            var cryptoTextEncoder = new TextEncoder("utf-8");
+            var cryptoTextDecoder = new TextDecoder("utf-8");
+            var aesKey = convertHexToUint8Array(key);
 
             window.crypto.subtle.importKey("raw", aesKey, {
                     name: "AES-CBC",
@@ -198,7 +179,7 @@ CryptoFunctions.prototype.AESDecrypt = function (encyptedData, key) {
                 })
                 .then(function (decryptedData) {
                     var decryptedArray = new Uint8Array(decryptedData);
-                    var plainText = cryptoContext.cryptoTextDecoder.decode(decryptedArray);
+                    var plainText = cryptoTextDecoder.decode(decryptedArray);
 
                     resolve(plainText);
                 });
@@ -218,45 +199,45 @@ CryptoFunctions.prototype.AESDecrypt = function (encyptedData, key) {
     }
 
 
-};
+}
 
 /**
  * Converts a derived key to a hex string.  Determines whether using subtle crypto of CryptoJS and uses appropriate function
  * @param {wordArray / bufffer} derivedKey.
  * @return {String}.
  */
-CryptoFunctions.prototype.convertDerivedKeyToHex = function (derivedKey) {
+function convertDerivedKeyToHex(derivedKey) {
     "use strict";
 
-    if (this.useSubtle) {
-        return this.convertUint8ArrayToHex(new Uint8Array(derivedKey));
+    if (window.crypto && window.crypto.subtle) {
+        return convertUint8ArrayToHex(new Uint8Array(derivedKey));
 
     } else {
-        return this.convertUint8ArrayToHex(this.convertWordArrayToUint8Array(derivedKey));
+        return convertUint8ArrayToHex(convertWordArrayToUint8Array(derivedKey));
 
     }
 
 
-};
+}
 
 /**
  * Converts a word array into a Hex String by chaining together canversion to Uint8Array, then to hex 
  * @param {word array} wordArray .
  * @return {String}.
  */
-CryptoFunctions.prototype.convertWordArrayToHex = function (wordArray) {
+function convertWordArrayToHex(wordArray) {
     "use strict";
 
-    return this.convertUint8ArrayToHex(this.convertWordArrayToUint8Array(wordArray));
+    return convertUint8ArrayToHex(convertWordArrayToUint8Array(wordArray));
 
-};
+}
 
 /**
  * Converts a word array into a Uint8Array. 
  * @param {word array} wordArray .
  * @return {Uint8Array}.
  */
-CryptoFunctions.prototype.convertWordArrayToUint8Array = function (wordArray) {
+function convertWordArrayToUint8Array(wordArray) {
     "use strict";
 
     var words = wordArray.words;
@@ -271,14 +252,14 @@ CryptoFunctions.prototype.convertWordArrayToUint8Array = function (wordArray) {
 
     return u8;
 
-};
+}
 
 /**
  * Converts a Uint8Array into a Uint8Array to a hex string. 
  * @param {u8Array} Uint8Array.
  * @return {String}.
  */
-CryptoFunctions.prototype.convertUint8ArrayToHex = function (u8Array) {
+function convertUint8ArrayToHex(u8Array) {
     var i;
     var len;
     var hex = '';
@@ -293,7 +274,7 @@ CryptoFunctions.prototype.convertUint8ArrayToHex = function (u8Array) {
     }
 
     return hex;
-};
+}
 
 
 /**
@@ -301,7 +282,7 @@ CryptoFunctions.prototype.convertUint8ArrayToHex = function (u8Array) {
  * @param {hex} String.
  * @return {Uint8Array}.
  */
-CryptoFunctions.prototype.convertHexToUint8Array = function (hex) {
+function convertHexToUint8Array(hex) {
     var i;
     var byteLen = hex.length / 2;
     var arr;
@@ -319,4 +300,22 @@ CryptoFunctions.prototype.convertHexToUint8Array = function (hex) {
     }
 
     return arr;
-};
+}
+
+/** Utility function to replace a string's value with all zeroes
+ */
+function zeroVar(varToZero) {
+    return Array(varToZero.length).join("0");
+
+}
+
+/** Utility function to replace an array's value with all zeroes
+ */
+function zeroIntArray(arrayToZero) {
+    var holdingVal = arrayToZero;
+    for (var aCounter = 0; aCounter < arrayToZero.length; aCounter++) {
+        holdingVal[aCounter] = 0;
+    }
+    return holdingVal;
+
+}
